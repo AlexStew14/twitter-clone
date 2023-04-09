@@ -10,6 +10,7 @@ dayjs.extend(relativeTime);
 
 import { type RouterOutputs, api } from "~/utils/api";
 import Image from "next/image";
+import { LoadingPage } from "~/components/Loading";
 
 const CreatePostWizard = () => {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -57,13 +58,32 @@ const PostView = (props: PostWithUser) => {
   );
 };
 
+const Feed = () => {
+  const { data, isLoading: postsIsLoading } = api.posts.getAll.useQuery();
+
+  if (postsIsLoading) {
+    return <LoadingPage />;
+  }
+  if (!data) {
+    return <div>Something went wrong.</div>;
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center">
+      {data.map(({ post, author }) => (
+        <PostView post={post} author={author} key={post.id} />
+      ))}
+    </div>
+  );
+};
+
 const Home: NextPage = () => {
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { isLoaded: userIsLoaded, isSignedIn, user } = useUser();
+  api.posts.getAll.useQuery();
 
-  const { data, isLoading } = api.posts.getAll.useQuery();
-
-  if (!isLoaded || isLoading) return <p>Loading...</p>;
-  if (!data) return <p>Failed to load posts.</p>;
+  if (!userIsLoaded) {
+    return <div />;
+  }
 
   return (
     <>
@@ -86,11 +106,7 @@ const Home: NextPage = () => {
             <SignInButton>Sign in</SignInButton>
           </div>
         )}
-        <div className="flex flex-col items-center justify-center">
-          {data.map(({ post, author }) => (
-            <PostView post={post} author={author} key={post.id} />
-          ))}
-        </div>
+        <Feed />
       </main>
     </>
   );
