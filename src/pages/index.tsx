@@ -22,17 +22,13 @@ const Home: NextPage = () => {
           <div className="flex flex-col items-center justify-center">
             <h1 className="text-4xl font-bold">Hello {user.fullName}!</h1>
             <p className="text-2xl font-medium">You are signed in.</p>
-            <SignOutButton className="text-2xl font-medium underline">
-              Sign out
-            </SignOutButton>
+            <SignOutButton>Sign out</SignOutButton>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center">
             <h1 className="text-4xl font-bold">Hello!</h1>
             <p className="text-2xl font-medium">You are not signed in.</p>
-            <SignInButton className="text-2xl font-medium underline">
-              Sign in
-            </SignInButton>
+            <SignInButton>Sign in</SignInButton>
           </div>
         )}
       </main>
