@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { SignIn, SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import { type NextPage } from "next";
 import Head from "next/head";
@@ -13,7 +14,17 @@ import Image from "next/image";
 import { LoadingPage } from "~/components/Loading";
 
 const CreatePostWizard = () => {
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { isSignedIn, user } = useUser();
+  const [input, setInput] = useState("");
+  const ctx = api.useContext();
+
+  const { mutate, isLoading: postIsLoading } = api.posts.create.useMutation({
+    onSuccess: () => {
+      setInput("");
+      void ctx.posts.getAll.invalidate();
+    },
+  });
+
   if (!isSignedIn) return null;
 
   return (
@@ -28,7 +39,11 @@ const CreatePostWizard = () => {
       <input
         placeholder="What's on your mind?"
         className="w-full grow border-none bg-transparent outline-none"
+        onChange={(e) => setInput(e.target.value)}
+        disabled={postIsLoading}
+        value={input}
       />
+      <button onClick={() => mutate({ content: input })}>Post</button>
     </div>
   );
 };
