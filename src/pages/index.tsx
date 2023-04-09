@@ -11,7 +11,8 @@ dayjs.extend(relativeTime);
 
 import { type RouterOutputs, api } from "~/utils/api";
 import Image from "next/image";
-import { LoadingPage } from "~/components/Loading";
+import { LoadingPage, LoadingSpinner } from "~/components/Loading";
+import toast from "react-hot-toast";
 
 const CreatePostWizard = () => {
   const { isSignedIn, user } = useUser();
@@ -22,6 +23,15 @@ const CreatePostWizard = () => {
     onSuccess: () => {
       setInput("");
       void ctx.posts.getAll.invalidate();
+    },
+    onError: (err) => {
+      const errorMessage = err.data?.zodError?.fieldErrors.content;
+      if (errorMessage && errorMessage[0]) {
+        toast.error(errorMessage[0]);
+      } else {
+        toast.error("Failed to post! Try again later.");
+      }
+      console.error(err);
     },
   });
 
@@ -42,8 +52,17 @@ const CreatePostWizard = () => {
         onChange={(e) => setInput(e.target.value)}
         disabled={postIsLoading}
         value={input}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            mutate({ content: input });
+          }
+        }}
       />
-      <button onClick={() => mutate({ content: input })}>Post</button>
+      {!postIsLoading && input && (
+        <button onClick={() => mutate({ content: input })}>Post</button>
+      )}
+      {postIsLoading && <LoadingSpinner size={30} />}
     </div>
   );
 };
