@@ -34,3 +34,7 @@ Database - PlanetScale
 Auth - Clerk
 Logging - Axiom
 Ratelimiting - Upstash
+
+## Next steps
+
+Look into react form hook
