@@ -6,6 +6,8 @@ import Head from "next/head";
 dayjs.extend(relativeTime);
 
 import { createServerSideHelpers } from "@trpc/react-query/server";
+import Image from "next/image";
+import Link from "next/link";
 import superjson from "superjson";
 
 import Feed from "~/components/Feed";
@@ -31,6 +33,35 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
+        <div className="flex h-12 w-full items-center gap-6 p-4">
+          <Link href="/">{`<-`}</Link>
+          {data.firstName && data.lastName && (
+            <p className="text-xl font-bold">
+              {data.firstName} {data.lastName}
+            </p>
+          )}
+        </div>
+        <div className="relative h-52 w-full">
+          <Image src={data.profileImageUrl} alt={data.username} fill />
+        </div>
+        <div className="relative w-full">
+          <Image
+            src={data.profileImageUrl}
+            alt={data.username}
+            className="absolute left-4 top-[-70px] rounded-full border-4 border-slate-950 bg-slate-950"
+            width={140}
+            height={140}
+          />
+        </div>
+        <div className="m-16" />
+        <div className="border-b border-slate-700 p-4">
+          {data.firstName && data.lastName && (
+            <p className="text-xl font-bold">
+              {data.firstName} {data.lastName}
+            </p>
+          )}
+          <p className="font-light text-slate-500">{`@${data.username}`}</p>
+        </div>
         <Feed userID={data.id} />
       </Layout>
     </>
