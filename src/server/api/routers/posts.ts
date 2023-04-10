@@ -20,14 +20,37 @@ const ratelimit = new Ratelimit({
 });
 
 export const postsRouter = createTRPCRouter({
-  getAll: publicProcedure.query(async ({ ctx }) => {
-    const posts = await ctx.prisma.post.findMany({
-      take: 100,
-      orderBy: [{ createdAt: "desc" }],
-    });
+  list: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().nullish(),
+        cursor: z.string().nullish(),
+        userID: z.string().nullish(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { cursor, userID } = input;
+      const limit = input.limit || 5;
 
-    return addUsersToPosts(posts);
-  }),
+      const posts = await ctx.prisma.post.findMany({
+        take: limit + 1,
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: [{ id: "desc" }],
+        where: userID
+          ? {
+              authorId: userID,
+            }
+          : undefined,
+      });
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (posts.length > limit) {
+        const nextPost = posts.pop();
+        nextCursor = nextPost!.id;
+      }
+
+      const postsWithUsers = await addUsersToPosts(posts);
+      return { posts: postsWithUsers, nextCursor };
+    }),
   getByID: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -45,19 +68,6 @@ export const postsRouter = createTRPCRouter({
       }
 
       return addUserToPost(post);
-    }),
-  getByUserID: publicProcedure
-    .input(z.object({ userID: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const posts = await ctx.prisma.post.findMany({
-        where: {
-          authorId: input.userID,
-        },
-        take: 100,
-        orderBy: [{ createdAt: "desc" }],
-      });
-
-      return addUsersToPosts(posts);
     }),
   create: privateProcedure
     .input(

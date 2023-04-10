@@ -6,7 +6,7 @@ import { api } from "~/utils/api";
 const Layout = (props: PropsWithChildren) => {
   const { children } = props;
   const { isLoaded: userIsLoaded, isSignedIn } = useUser();
-  api.posts.getAll.useQuery();
+  api.posts.list.useQuery({ limit: 10 });
 
   if (!userIsLoaded) {
     return <div />;
