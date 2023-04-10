@@ -1,13 +1,18 @@
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { type GetStaticProps, type NextPage } from "next";
 import Head from "next/head";
 
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-
 dayjs.extend(relativeTime);
 
-import { api } from "~/utils/api";
+import { createServerSideHelpers } from "@trpc/react-query/server";
 import Image from "next/image";
+import superjson from "superjson";
+
+import { LoadingPage } from "~/components/Loading";
+import { appRouter } from "~/server/api/root";
+import { prisma } from "~/server/db";
+import { api } from "~/utils/api";
 
 const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
   const { data } = api.profile.getUserByUsername.useQuery({
@@ -18,6 +23,11 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
     return <div>Not found</div>;
   }
 
+  const { data: posts, isLoading: postsIsLoading } =
+    api.posts.getByUserID.useQuery({
+      userID: data.id,
+    });
+
   return (
     <>
       <Head>
@@ -27,7 +37,7 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
       </Head>
       <main>
         <div className="flex items-center justify-center">
-          <span className="text-4xl font-bold">Hello {data.username}!</span>
+          <span className="text-4xl font-bold">{data.username}</span>
           <Image
             src={data.profileImageUrl}
             alt={data.username}
@@ -36,15 +46,33 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
             height={20}
           />
         </div>
+        {postsIsLoading ? (
+          <LoadingPage />
+        ) : (
+          <div className="flex flex-col items-center justify-center">
+            {!posts ? (
+              <div className="flex flex-col items-center justify-center">
+                <p>No posts yet</p>
+              </div>
+            ) : (
+              <div>
+                {posts.map((post) => (
+                  <div
+                    key={post.id}
+                    className="flex items-center justify-center"
+                  >
+                    <span>{post.content}</span>
+                    <span>{dayjs(post.createdAt).fromNow()}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </>
   );
 };
-
-import { createServerSideHelpers } from "@trpc/react-query/server";
-import { appRouter } from "~/server/api/root";
-import { prisma } from "~/server/db";
-import superjson from "superjson";
 
 export const getStaticProps: GetStaticProps = async (context) => {
   const ssg = createServerSideHelpers({

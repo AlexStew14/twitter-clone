@@ -1,4 +1,5 @@
 import { createTRPCRouter } from "~/server/api/trpc";
+
 import { postsRouter } from "./routers/posts";
 import { profileRouter } from "./routers/profile";
 

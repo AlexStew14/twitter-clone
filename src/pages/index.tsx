@@ -1,18 +1,16 @@
-import { useState } from "react";
-import { SignIn, SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
-import { type NextPage } from "next";
-import Head from "next/head";
-import Link from "next/link";
-
+import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { type NextPage } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
+import toast from "react-hot-toast";
+
+import { LoadingPage, LoadingSpinner } from "~/components/Loading";
+import { api, type RouterOutputs } from "~/utils/api";
 
 dayjs.extend(relativeTime);
-
-import { type RouterOutputs, api } from "~/utils/api";
-import Image from "next/image";
-import { LoadingPage, LoadingSpinner } from "~/components/Loading";
-import toast from "react-hot-toast";
 
 const CreatePostWizard = () => {
   const { isSignedIn, user } = useUser();
@@ -68,22 +66,21 @@ const CreatePostWizard = () => {
 };
 
 type PostWithUser = RouterOutputs["posts"]["getAll"][number];
-const PostView = (props: PostWithUser) => {
-  const { post, author } = props;
+const PostView = (post: PostWithUser) => {
   return (
     <div className="flex w-full flex-col gap-4 px-4">
       <div className="flex w-full gap-4">
         <Image
-          src={author.profileImageUrl}
-          alt={author.username}
+          src={post.author.profileImageUrl}
+          alt={post.author.username}
           className="rounded-full"
           width={64}
           height={20}
         />
         <div className="flex w-full flex-col">
           <div className="flex w-full gap-2">
-            <Link href={`/@${author.username}`}>
-              <p className="font-bold">{author.username}</p>
+            <Link href={`/@${post.author.username}`}>
+              <p className="font-bold">{post.author.username}</p>
             </Link>
             <Link href={`/post/${post.id}`}>
               <span className="font-thin">
@@ -110,8 +107,8 @@ const Feed = () => {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      {data.map(({ post, author }) => (
-        <PostView post={post} author={author} key={post.id} />
+      {data.map((post) => (
+        <PostView {...post} key={post.id} />
       ))}
     </div>
   );

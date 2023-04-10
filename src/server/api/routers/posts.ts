@@ -1,6 +1,6 @@
-import { type User } from "@clerk/nextjs/dist/api";
-import { clerkClient } from "@clerk/nextjs/server";
 import { TRPCError } from "@trpc/server";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 import { z } from "zod";
 
 import {
@@ -8,10 +8,7 @@ import {
   privateProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-import { filterUserForClient } from "~/server/helpers/filterUserForClient";
+import { addUsersToPosts } from "~/server/helpers/addUsersToPosts";
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
@@ -26,27 +23,40 @@ export const postsRouter = createTRPCRouter({
       orderBy: [{ createdAt: "desc" }],
     });
 
-    const users = (
-      await clerkClient.users.getUserList({
-        userId: posts.map((post) => post.authorId),
-        limit: 100,
-      })
-    ).map(filterUserForClient);
+    return addUsersToPosts(posts);
+  }),
+  getByID: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const post = await ctx.prisma.post.findUnique({
+        where: {
+          id: input.id,
+        },
+      });
 
-    return posts.map((post) => {
-      const author = users.find((user) => user.id === post.authorId);
-      if (!author || !author.username) {
+      if (!post) {
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Could not find author for post or author has no username",
+          code: "NOT_FOUND",
+          message: "Post not found",
         });
       }
-      return {
-        post,
-        author,
-      };
-    });
-  }),
+
+      const posts = await addUsersToPosts([post]);
+      return posts[0];
+    }),
+  getByUserID: publicProcedure
+    .input(z.object({ userID: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const posts = await ctx.prisma.post.findMany({
+        where: {
+          authorId: input.userID,
+        },
+        take: 100,
+        orderBy: [{ createdAt: "desc" }],
+      });
+
+      return addUsersToPosts(posts);
+    }),
   create: privateProcedure
     .input(
       z.object({

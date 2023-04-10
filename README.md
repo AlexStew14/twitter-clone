@@ -38,3 +38,5 @@ Ratelimiting - Upstash
 ## Next steps
 
 Look into react form hook
+Look into trpc pagination/infinitescroll
+Vercel OG images for posts
