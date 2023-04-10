@@ -8,7 +8,10 @@ import {
   privateProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { addUsersToPosts } from "~/server/helpers/addUsersToPosts";
+import {
+  addUsersToPosts,
+  addUserToPost,
+} from "~/server/helpers/addUsersToPosts";
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
@@ -41,8 +44,7 @@ export const postsRouter = createTRPCRouter({
         });
       }
 
-      const posts = await addUsersToPosts([post]);
-      return posts[0];
+      return addUserToPost(post);
     }),
   getByUserID: publicProcedure
     .input(z.object({ userID: z.string() }))

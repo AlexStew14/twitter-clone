@@ -12,7 +12,7 @@ export const addUsersToPosts = async (posts: Post[]) => {
     })
   ).map(filterUserForClient);
 
-  return posts.map((post) => {
+  const postsWithUsers = posts.map((post) => {
     const author = users.find((user) => user.id === post.authorId);
     if (!author || !author.username) {
       throw new TRPCError({
@@ -25,4 +25,24 @@ export const addUsersToPosts = async (posts: Post[]) => {
       author,
     };
   });
+
+  return postsWithUsers;
+};
+
+export const addUserToPost = async (post: Post) => {
+  const author = await clerkClient.users
+    .getUser(post.authorId)
+    .then(filterUserForClient);
+
+  if (!author || !author.username) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Could not find author for post or author has no username",
+    });
+  }
+
+  return {
+    ...post,
+    author,
+  };
 };

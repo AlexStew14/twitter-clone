@@ -36,17 +36,17 @@ const CreatePostWizard = () => {
   if (!isSignedIn) return null;
 
   return (
-    <div className="flex w-full gap-4 px-4">
+    <div className="mb-4 flex items-center justify-between gap-2 border-b border-slate-700 px-2 py-4">
       <Image
         src={user.profileImageUrl}
         alt="User Profile"
         className="rounded-full"
-        width={64}
+        width={50}
         height={16}
       />
       <input
-        placeholder="What's on your mind?"
-        className="w-full grow border-none bg-transparent outline-none"
+        placeholder="What's happening?"
+        className="w-full grow border-none bg-transparent text-xl outline-none"
         onChange={(e) => setInput(e.target.value)}
         disabled={postIsLoading}
         value={input}
@@ -57,39 +57,39 @@ const CreatePostWizard = () => {
           }
         }}
       />
-      {!postIsLoading && input && (
-        <button onClick={() => mutate({ content: input })}>Post</button>
-      )}
+      <button
+        className="h-9 rounded-full bg-blue-500 px-4 font-bold"
+        onClick={() => mutate({ content: input })}
+        disabled={postIsLoading || !input}
+      >
+        Tweet
+      </button>
       {postIsLoading && <LoadingSpinner size={30} />}
     </div>
   );
 };
 
-type PostWithUser = RouterOutputs["posts"]["getAll"][number];
+type PostWithUser = RouterOutputs["posts"]["getByID"];
 const PostView = (post: PostWithUser) => {
   return (
-    <div className="flex w-full flex-col gap-4 px-4">
-      <div className="flex w-full gap-4">
-        <Image
-          src={post.author.profileImageUrl}
-          alt={post.author.username}
-          className="rounded-full"
-          width={64}
-          height={20}
-        />
-        <div className="flex w-full flex-col">
-          <div className="flex w-full gap-2">
-            <Link href={`/@${post.author.username}`}>
-              <p className="font-bold">{post.author.username}</p>
-            </Link>
-            <Link href={`/post/${post.id}`}>
-              <span className="font-thin">
-                {dayjs(post.createdAt).fromNow()}
-              </span>
-            </Link>
-          </div>
-          <p>{post.content}</p>
+    <div className="flex w-full items-center gap-3 border-b border-slate-700 px-2 pb-4">
+      <Image
+        src={post.author.profileImageUrl}
+        alt={post.author.username}
+        className="rounded-full"
+        width={50}
+        height={50}
+      />
+      <div className="flex max-w-xl flex-col">
+        <div className="flex gap-2">
+          <Link href={`/@${post.author.username}`}>
+            <p className="font-bold">{`@${post.author.username}`}</p>
+          </Link>
+          <Link href={`/post/${post.id}`}>
+            <span className="font-thin">{dayjs(post.createdAt).fromNow()}</span>
+          </Link>
         </div>
+        <p className="w-full break-words">{post.content}</p>
       </div>
     </div>
   );
@@ -106,7 +106,7 @@ const Feed = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center gap-4">
       {data.map((post) => (
         <PostView {...post} key={post.id} />
       ))}
@@ -115,7 +115,7 @@ const Feed = () => {
 };
 
 const Home: NextPage = () => {
-  const { isLoaded: userIsLoaded, isSignedIn, user } = useUser();
+  const { isLoaded: userIsLoaded, isSignedIn } = useUser();
   api.posts.getAll.useQuery();
 
   if (!userIsLoaded) {
@@ -125,20 +125,19 @@ const Home: NextPage = () => {
   return (
     <>
       <main>
-        {isSignedIn ? (
-          <div className="flex flex-col items-center justify-center">
-            <h1 className="text-4xl font-bold">Hello {user.fullName}!</h1>
-            <CreatePostWizard />
-            <SignOutButton>Sign out</SignOutButton>
+        <div className="fixed bottom-5 left-5">
+          <div className="rounded-full bg-slate-700 p-3">
+            {isSignedIn ? (
+              <SignOutButton>Sign Out</SignOutButton>
+            ) : (
+              <SignInButton>Sign In</SignInButton>
+            )}
           </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center">
-            <h1 className="text-4xl font-bold">Hello!</h1>
-            <p className="text-2xl font-medium">You are not signed in.</p>
-            <SignInButton>Sign in</SignInButton>
-          </div>
-        )}
-        <Feed />
+        </div>
+        <div className="mx-auto max-w-2xl border-l border-r border-slate-700">
+          {isSignedIn && <CreatePostWizard />}
+          <Feed />
+        </div>
       </main>
     </>
   );
