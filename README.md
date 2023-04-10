@@ -40,3 +40,4 @@ Ratelimiting - Upstash
 Look into react form hook
 Look into trpc pagination/infinitescroll
 Vercel OG images for posts
+Storing user in DB to add additional data like description, background picture, custom profile picture

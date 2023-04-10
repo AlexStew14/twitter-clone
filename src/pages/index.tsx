@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
+import Feed from "~/components/Feed";
+import Layout from "~/components/Layout";
 import { LoadingPage, LoadingSpinner } from "~/components/Loading";
 import { api, type RouterOutputs } from "~/utils/api";
 
@@ -36,7 +38,7 @@ const CreatePostWizard = () => {
   if (!isSignedIn) return null;
 
   return (
-    <div className="mb-4 flex items-center justify-between gap-2 border-b border-slate-700 px-2 py-4">
+    <div className="flex items-center justify-between gap-2 border-b border-slate-700 px-2 py-4">
       <Image
         src={user.profileImageUrl}
         alt="User Profile"
@@ -69,77 +71,14 @@ const CreatePostWizard = () => {
   );
 };
 
-type PostWithUser = RouterOutputs["posts"]["getByID"];
-const PostView = (post: PostWithUser) => {
-  return (
-    <div className="flex w-full items-center gap-3 border-b border-slate-700 px-2 pb-4">
-      <Image
-        src={post.author.profileImageUrl}
-        alt={post.author.username}
-        className="rounded-full"
-        width={50}
-        height={50}
-      />
-      <div className="flex max-w-xl flex-col">
-        <div className="flex gap-2">
-          <Link href={`/@${post.author.username}`}>
-            <p className="font-bold">{`@${post.author.username}`}</p>
-          </Link>
-          <Link href={`/post/${post.id}`}>
-            <span className="font-thin">{dayjs(post.createdAt).fromNow()}</span>
-          </Link>
-        </div>
-        <p className="w-full break-words">{post.content}</p>
-      </div>
-    </div>
-  );
-};
-
-const Feed = () => {
-  const { data, isLoading: postsIsLoading } = api.posts.getAll.useQuery();
-
-  if (postsIsLoading) {
-    return <LoadingPage />;
-  }
-  if (!data) {
-    return <div>Something went wrong.</div>;
-  }
-
-  return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      {data.map((post) => (
-        <PostView {...post} key={post.id} />
-      ))}
-    </div>
-  );
-};
-
 const Home: NextPage = () => {
-  const { isLoaded: userIsLoaded, isSignedIn } = useUser();
-  api.posts.getAll.useQuery();
-
-  if (!userIsLoaded) {
-    return <div />;
-  }
+  const { isSignedIn } = useUser();
 
   return (
-    <>
-      <main>
-        <div className="fixed bottom-5 left-5">
-          <div className="rounded-full bg-slate-700 p-3">
-            {isSignedIn ? (
-              <SignOutButton>Sign Out</SignOutButton>
-            ) : (
-              <SignInButton>Sign In</SignInButton>
-            )}
-          </div>
-        </div>
-        <div className="mx-auto max-w-2xl border-l border-r border-slate-700">
-          {isSignedIn && <CreatePostWizard />}
-          <Feed />
-        </div>
-      </main>
-    </>
+    <Layout>
+      {isSignedIn && <CreatePostWizard />}
+      <Feed />
+    </Layout>
   );
 };
 
