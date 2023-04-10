@@ -23,7 +23,7 @@ const PostView = (post: PostWithUser) => {
           height={50}
         />
       </Link>
-      <div className="flex max-w-xl flex-col">
+      <div className="flex w-full flex-col">
         <Link href={`/@${post.author.username}`} className="flex gap-2">
           {post.author.firstName && post.author.lastName && (
             <p className="font-bold hover:underline">
@@ -36,7 +36,7 @@ const PostView = (post: PostWithUser) => {
             <span>{dayjs(post.createdAt).fromNow()}</span>
           </div>
         </Link>
-        <p className="w-full break-words">{post.content}</p>
+        <p className="w-full break-all">{post.content}</p>
       </div>
     </Link>
   );
