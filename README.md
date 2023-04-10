@@ -9,6 +9,14 @@ Video followed: https://www.youtube.com/watch?v=YkOSUVzOAA4
 * Infinite scroll via api pagination
 * Profiles and posts
 
+## Tech used
+* TypeScript
+* Next.js
+* tRPC
+* prisma
+* zod
+* tailwind
+
 ## External websites used
 
 * Deployment - Vercel
