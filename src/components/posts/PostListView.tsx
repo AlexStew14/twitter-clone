@@ -8,7 +8,7 @@ dayjs.extend(relativeTime);
 import { type RouterOutputs } from "~/utils/api";
 
 type PostWithUser = RouterOutputs["posts"]["getByID"];
-const PostView = (post: PostWithUser) => {
+const PostListView = (post: PostWithUser) => {
   return (
     <Link
       href={`/post/${post.id}`}
@@ -42,4 +42,4 @@ const PostView = (post: PostWithUser) => {
   );
 };
 
-export default PostView;
+export default PostListView;

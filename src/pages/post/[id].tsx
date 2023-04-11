@@ -3,10 +3,11 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { type GetStaticProps, type NextPage } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import superjson from "superjson";
 
 import Layout from "~/components/Layout";
-import PostView from "~/components/PostView";
+import PostDetailView from "~/components/posts/PostDetailView";
 import { appRouter } from "~/server/api/root";
 import { prisma } from "~/server/db";
 import { api } from "~/utils/api";
@@ -28,7 +29,11 @@ const SinglePostPage: NextPage<{ id: string }> = ({ id }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
-        <PostView {...post} />
+        <div className="flex h-12 w-full items-center gap-6 p-4">
+          <Link href="/">{`<-`}</Link>
+          <p className="text-xl font-bold">Tweet</p>
+        </div>
+        <PostDetailView {...post} />
       </Layout>
     </>
   );

@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { api } from "~/utils/api";
 
 import { LoadingPage, LoadingSpinner } from "./Loading";
-import PostView from "./PostView";
+import PostListView from "./posts/PostListView";
 
 const Feed = (props: { userID?: string }) => {
   const { userID } = props;
@@ -61,7 +61,7 @@ const Feed = (props: { userID?: string }) => {
       }}
     >
       {data.pages.map((page) =>
-        page.posts.map((post) => <PostView {...post} key={post.id} />)
+        page.posts.map((post) => <PostListView {...post} key={post.id} />)
       )}
       {fetchingNextPosts && <LoadingSpinner />}
     </div>

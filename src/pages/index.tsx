@@ -41,22 +41,24 @@ const CreatePostWizard = () => {
   if (!isSignedIn) return null;
 
   return (
-    <div className="w-full justify-between border-b border-slate-700 px-4 pb-2 pt-4">
-      <Image
-        src={user.profileImageUrl}
-        alt="User Profile"
-        className="rounded-full"
-        width={50}
-        height={16}
-      />
-      <div className="pb-2 pl-14 pr-1">
-        <textarea
-          placeholder="What's happening?"
-          className="w-full resize-none break-all border-b border-b-slate-700 bg-transparent pb-4 text-xl text-slate-200 outline-none"
-          onChange={(e) => setInput(e.target.value)}
-          value={input}
-          ref={textAreaRef}
+    <div className="w-full border-b border-slate-700 px-4 pb-2 pt-8">
+      <div className="flex w-full">
+        <Image
+          src={user.profileImageUrl}
+          alt="User Profile"
+          className="h-[50px] w-[50px] rounded-full"
+          width={50}
+          height={50}
         />
+        <div className="grow pb-2 pl-14 pr-1">
+          <textarea
+            placeholder="What's happening?"
+            className="w-full resize-none break-all border-b border-b-slate-700 bg-transparent pb-4 text-xl text-slate-200 outline-none"
+            onChange={(e) => setInput(e.target.value)}
+            value={input}
+            ref={textAreaRef}
+          />
+        </div>
       </div>
       <div className="ml-auto flex w-full justify-end">
         <div className="flex items-center gap-4">
