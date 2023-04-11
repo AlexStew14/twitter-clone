@@ -23,7 +23,7 @@ export const postsRouter = createTRPCRouter({
   list: publicProcedure
     .input(
       z.object({
-        limit: z.number().nullish(),
+        limit: z.number().min(1).nullish(),
         cursor: z.string().nullish(),
         userID: z.string().nullish(),
       })
@@ -44,8 +44,9 @@ export const postsRouter = createTRPCRouter({
       });
       let nextCursor: typeof cursor | undefined = undefined;
       if (posts.length > limit) {
-        const nextPost = posts.pop();
-        nextCursor = nextPost!.id;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const nextPost = posts.pop()!;
+        nextCursor = nextPost.id;
       }
 
       const postsWithUsers = await addUsersToPosts(posts);
