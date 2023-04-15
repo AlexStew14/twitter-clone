@@ -7,8 +7,8 @@ dayjs.extend(relativeTime);
 
 import { type RouterOutputs } from "~/utils/api";
 
-type PostWithUser = RouterOutputs["posts"]["getByID"];
-const PostDetailView = (post: PostWithUser) => {
+type PostWithAuthor = RouterOutputs["posts"]["getByID"];
+const PostDetailView = (post: PostWithAuthor) => {
   return (
     <div className="flex w-full flex-col items-center gap-3 border-b border-slate-700 px-4 py-4 hover:bg-slate-950">
       <div className="flex w-full items-center justify-start gap-3">

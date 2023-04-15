@@ -3,23 +3,43 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { filterUserForClient } from "~/server/helpers/filterUserForClient";
+
 
 export const profileRouter = createTRPCRouter({
   getUserByUsername: publicProcedure
     .input(z.object({ username: z.string() }))
-    .query(async ({ input }) => {
-      const [user] = await clerkClient.users.getUserList({
+    .query(async ({ ctx, input }) => {
+      const dbUser = await ctx.prisma.user.findUnique({
+        where: {
+          username: input.username,
+        },
+      });
+
+      if (dbUser) {
+        return dbUser;
+      }
+
+
+      const [clerkUser] = await clerkClient.users.getUserList({
         username: [input.username],
       });
 
-      if (!user || !user.username) {
+      if (!clerkUser || !clerkUser.username) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Could not find user with that username",
         });
       }
 
-      return filterUserForClient(user);
-    }),
+      return await ctx.prisma.user.create({
+        data: {
+          id: clerkUser.id,
+          username: clerkUser.username,
+          firstName: clerkUser.firstName || "",
+          lastName: clerkUser.lastName || "",
+          profileImageUrl: clerkUser.profileImageUrl || "",
+          description: "",
+        }
+      });
+    })
 });

@@ -3,15 +3,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { z } from "zod";
 
-import {
-  createTRPCRouter,
-  privateProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
-import {
-  addUsersToPosts,
-  addUserToPost,
-} from "~/server/helpers/addUsersToPosts";
+import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
@@ -32,24 +24,35 @@ export const postsRouter = createTRPCRouter({
       const { cursor, userID } = input;
       const limit = input.limit || 5;
 
-      const posts = await ctx.prisma.post.findMany({
+      const postsWithUsers = await ctx.prisma.post.findMany({
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: [{ id: "desc" }],
+        include: {
+          author: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              profileImageUrl: true,
+            }
+          }
+        },
         where: userID
           ? {
               authorId: userID,
             }
           : undefined,
       });
+
       let nextCursor: typeof cursor | undefined = undefined;
-      if (posts.length > limit) {
+      if (postsWithUsers.length > limit) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const nextPost = posts.pop()!;
+        const nextPost = postsWithUsers.pop()!;
         nextCursor = nextPost.id;
       }
 
-      const postsWithUsers = await addUsersToPosts(posts);
       return { posts: postsWithUsers, nextCursor };
     }),
   getByID: publicProcedure
@@ -59,6 +62,17 @@ export const postsRouter = createTRPCRouter({
         where: {
           id: input.id,
         },
+        include: {
+          author: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              profileImageUrl: true,
+            }
+          }
+        }
       });
 
       if (!post) {
@@ -68,7 +82,7 @@ export const postsRouter = createTRPCRouter({
         });
       }
 
-      return addUserToPost(post);
+      return post;
     }),
   create: privateProcedure
     .input(
@@ -87,12 +101,11 @@ export const postsRouter = createTRPCRouter({
         });
       }
 
-      const post = await ctx.prisma.post.create({
+      return await ctx.prisma.post.create({
         data: {
           authorId,
           content: input.content,
         },
       });
-      return post;
     }),
 });

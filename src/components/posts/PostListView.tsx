@@ -4,14 +4,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { AiOutlineHeart, AiOutlineRetweet } from "react-icons/ai";
 import { BiBarChart } from "react-icons/bi";
-import { FaRegComment, FaRetweet } from "react-icons/fa";
+import { FaRegComment} from "react-icons/fa";
 
 dayjs.extend(relativeTime);
 
 import { type RouterOutputs } from "~/utils/api";
 
-type PostWithUser = RouterOutputs["posts"]["getByID"];
-const PostListView = (post: PostWithUser) => {
+type PostWithAuthor = RouterOutputs["posts"]["list"]["posts"][0];
+const PostListView = (post: PostWithAuthor) => {
+
   return (
     <Link
       href={`/post/${post.id}`}

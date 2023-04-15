@@ -27,7 +27,7 @@ const Layout = (props: PropsWithChildren) => {
             )}
           </div>
         </div>
-        <div className="absolute left-8 max-w-xl">
+        <div className="absolute left-8 hidden max-w-xl xl:block">
           <nav className="w-full text-2xl">
             <ul className="mt-4 flex flex-col justify-between gap-6">
               <li>

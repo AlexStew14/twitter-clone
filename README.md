@@ -31,3 +31,18 @@ Video followed: https://www.youtube.com/watch?v=YkOSUVzOAA4
 * Look into react form hook
 * Vercel OG images for posts
 * Storing user in DB to add additional data like description, background picture, custom profile picture
+
+
+## Twitter Features
+* Posts (text, image, video)
+** Reply
+** Retweet
+** Like
+** Share
+** View
+* Profile
+** Follow
+** Mute/Block/Report
+** Picture/Banner Picture
+** Description
+
