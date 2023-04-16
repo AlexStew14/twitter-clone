@@ -2,8 +2,8 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-
+import { profileEditSchema } from "~/components/profiles/EditProfileModal";
+import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
 
 export const profileRouter = createTRPCRouter({
   getUserByUsername: publicProcedure
@@ -18,7 +18,6 @@ export const profileRouter = createTRPCRouter({
       if (dbUser) {
         return dbUser;
       }
-
 
       const [clerkUser] = await clerkClient.users.getUserList({
         username: [input.username],
@@ -39,7 +38,26 @@ export const profileRouter = createTRPCRouter({
           lastName: clerkUser.lastName || "",
           profileImageUrl: clerkUser.profileImageUrl || "",
           description: "",
-        }
+        },
       });
-    })
+    }),
+  editUser: privateProcedure.input(profileEditSchema).mutation(async ({ ctx, input }) => {
+    if (ctx.userId !== input.userId) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You are not authorized to edit this user",
+      });
+    }
+
+    return await ctx.prisma.user.update({
+      where: {
+        id: input.userId,
+      },
+      data: {
+        firstName: input.firstName,
+        lastName: input.lastName,
+        description: input.description,
+      },
+    });
+  }),
 });

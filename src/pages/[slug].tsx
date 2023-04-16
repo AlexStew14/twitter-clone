@@ -2,16 +2,20 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { type GetStaticProps, type NextPage } from "next";
 import Head from "next/head";
+import { useState } from "react";
 
 dayjs.extend(relativeTime);
 
+import { useUser } from "@clerk/nextjs";
 import { createServerSideHelpers } from "@trpc/react-query/server";
 import Image from "next/image";
 import Link from "next/link";
+import { AiOutlineArrowLeft } from "react-icons/ai";
 import superjson from "superjson";
 
 import Feed from "~/components/Feed";
 import Layout from "~/components/Layout";
+import EditProfileModal from "~/components/profiles/EditProfileModal";
 import { appRouter } from "~/server/api/root";
 import { prisma } from "~/server/db";
 import { api } from "~/utils/api";
@@ -20,6 +24,8 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
   const { data: user } = api.profile.getUserByUsername.useQuery({
     username,
   });
+  const { user: clerkUser } = useUser();
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
 
   if (!user) {
     return <div>Not found</div>;
@@ -33,8 +39,15 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
+        <EditProfileModal
+          isOpen={isEditProfileModalOpen}
+          setIsOpen={setIsEditProfileModalOpen}
+          user={user}
+        />
         <div className="flex h-12 w-full items-center gap-6 p-4">
-          <Link href="/">{`<-`}</Link>
+          <Link href="/">
+            <AiOutlineArrowLeft className="text-xl" />
+          </Link>
           {user.firstName && user.lastName && (
             <p className="text-xl font-bold">
               {user.firstName} {user.lastName}
@@ -44,7 +57,7 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
         <div className="relative h-52 w-full">
           <Image src={user.profileImageUrl} alt={user.username} fill />
         </div>
-        <div className="relative w-full">
+        <div className="relative">
           <Image
             src={user.profileImageUrl}
             alt={user.username}
@@ -53,7 +66,22 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
             height={140}
           />
         </div>
-        <div className="m-16" />
+        {clerkUser && clerkUser.id === user.id ? (
+          <>
+            <div className="relative flex w-full items-center justify-end">
+              <button
+                type="button"
+                className="mr-3 mt-3 rounded-full border border-slate-500 px-3 py-1 font-semibold transition-all hover:bg-slate-300 hover:bg-opacity-20"
+                onClick={() => setIsEditProfileModalOpen(true)}
+              >
+                Edit Profile
+              </button>
+            </div>
+            <div className="m-6" />
+          </>
+        ) : (
+          <div className="m-16" />
+        )}
         <div className="border-b border-slate-700 p-4">
           {user.firstName && user.lastName && (
             <p className="text-xl font-bold">
