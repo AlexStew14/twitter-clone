@@ -1,4 +1,4 @@
-import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
+import { SignInButton, SignOutButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { type PropsWithChildren } from "react";
 
@@ -6,10 +6,10 @@ import { api } from "~/utils/api";
 
 const Layout = (props: PropsWithChildren) => {
   const { children } = props;
-  const { isLoaded: userIsLoaded, isSignedIn } = useUser();
-  api.posts.list.useQuery({ limit: 10 });
+  const { isLoading: userIsLoading, data: user } = api.profile.getLoggedInUser.useQuery();
+  const ctx = api.useContext();
 
-  if (!userIsLoaded) {
+  if (userIsLoading) {
     return <div />;
   }
 
@@ -18,12 +18,16 @@ const Layout = (props: PropsWithChildren) => {
       <main>
         <div className="fixed bottom-5 left-5">
           <div className="rounded-full bg-slate-700 p-3">
-            {isSignedIn ? (
+            {user ? (
               <div>
-                <SignOutButton>Sign Out</SignOutButton>
+                <SignOutButton signOutCallback={() => ctx.profile.getLoggedInUser.invalidate()}>
+                  Sign Out
+                </SignOutButton>
               </div>
             ) : (
-              <SignInButton>Sign In</SignInButton>
+              <SignInButton redirectUrl={window.location.href} mode="modal">
+                Sign In
+              </SignInButton>
             )}
           </div>
         </div>
@@ -59,9 +63,7 @@ const Layout = (props: PropsWithChildren) => {
             </ul>
           </nav>
         </div>
-        <div className="mx-auto max-w-2xl border-l border-r border-slate-700">
-          {children}
-        </div>
+        <div className="mx-auto max-w-2xl border-l border-r border-slate-700">{children}</div>
       </main>
     </>
   );

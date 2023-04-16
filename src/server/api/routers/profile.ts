@@ -13,6 +13,14 @@ export const profileRouter = createTRPCRouter({
         where: {
           username: input.username,
         },
+        include: {
+          _count: {
+            select: {
+              following: true,
+              followedBy: true,
+            },
+          },
+        },
       });
 
       if (dbUser) {
@@ -39,8 +47,43 @@ export const profileRouter = createTRPCRouter({
           profileImageUrl: clerkUser.profileImageUrl || "",
           description: "",
         },
+        include: {
+          _count: {
+            select: {
+              following: true,
+              followedBy: true,
+            },
+          },
+        },
       });
     }),
+  getLoggedInUser: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.userId) {
+      return null;
+    }
+
+    const dbUser = await ctx.prisma.user.findUnique({
+      where: {
+        id: ctx.userId,
+      },
+      include: {
+        following: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    if (!dbUser) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Could not find logged in user",
+      });
+    }
+
+    return dbUser;
+  }),
   editUser: privateProcedure.input(profileEditSchema).mutation(async ({ ctx, input }) => {
     if (ctx.userId !== input.userId) {
       throw new TRPCError({
@@ -60,4 +103,80 @@ export const profileRouter = createTRPCRouter({
       },
     });
   }),
+  followUser: privateProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.userId === input.userId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot follow yourself",
+        });
+      }
+
+      await Promise.all([
+        ctx.prisma.user.update({
+          where: {
+            id: input.userId,
+          },
+          data: {
+            followedBy: {
+              connect: {
+                id: ctx.userId,
+              },
+            },
+          },
+        }),
+        ctx.prisma.user.update({
+          where: {
+            id: ctx.userId,
+          },
+          data: {
+            following: {
+              connect: {
+                id: input.userId,
+              },
+            },
+          },
+        }),
+      ]);
+      return {};
+    }),
+  unfollowUser: privateProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.userId === input.userId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot unfollow yourself",
+        });
+      }
+
+      await Promise.all([
+        ctx.prisma.user.update({
+          where: {
+            id: input.userId,
+          },
+          data: {
+            followedBy: {
+              disconnect: {
+                id: ctx.userId,
+              },
+            },
+          },
+        }),
+        ctx.prisma.user.update({
+          where: {
+            id: ctx.userId,
+          },
+          data: {
+            following: {
+              disconnect: {
+                id: input.userId,
+              },
+            },
+          },
+        }),
+      ]);
+      return {};
+    }),
 });

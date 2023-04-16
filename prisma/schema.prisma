@@ -35,4 +35,7 @@ model User {
   profileImageUrl String @db.VarChar(511)
 
   posts Post[]
+
+  followedBy User[] @relation("UserFollows")
+  following  User[] @relation("UserFollows")
 }

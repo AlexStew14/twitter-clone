@@ -8,6 +8,8 @@ Video followed: https://www.youtube.com/watch?v=YkOSUVzOAA4
 * Fully deployed with auth, db, logging and ratelimiting
 * Infinite scroll via api pagination
 * Profiles and posts
+* Can edit profile
+* Can follow/unfollow users
 
 ## Tech used
 * TypeScript
@@ -28,13 +30,14 @@ Video followed: https://www.youtube.com/watch?v=YkOSUVzOAA4
 ## Next steps
 
 * <s>Look into trpc pagination/infinitescroll</s>
-* Look into react form hook
+* <s>Look into react form hook with zod and react query</s>
+* <s>Storing user in DB to add additional data like description, background picture, custom profile picture</s>
+* <s>Following users</s>
 * Vercel OG images for posts
-* Storing user in DB to add additional data like description, background picture, custom profile picture
 
 
 ## Twitter Features
-* Posts (text, image, video)
+* Posts (text, image, video) -> Currently only text
 ** Reply
 ** Retweet
 ** Like
@@ -44,5 +47,7 @@ Video followed: https://www.youtube.com/watch?v=YkOSUVzOAA4
 ** Follow
 ** Mute/Block/Report
 ** Picture/Banner Picture
-** Description
+** Description -> Done
 
+Blog Ideas:
+* React-form-hook with zod, trpc and react query in modal. 

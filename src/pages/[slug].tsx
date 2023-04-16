@@ -6,7 +6,6 @@ import { useState } from "react";
 
 dayjs.extend(relativeTime);
 
-import { useUser } from "@clerk/nextjs";
 import { createServerSideHelpers } from "@trpc/react-query/server";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,21 +14,44 @@ import superjson from "superjson";
 
 import Feed from "~/components/Feed";
 import Layout from "~/components/Layout";
+import { LoadingPage } from "~/components/Loading";
 import EditProfileModal from "~/components/profiles/EditProfileModal";
 import { appRouter } from "~/server/api/root";
 import { prisma } from "~/server/db";
 import { api } from "~/utils/api";
 
 const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
+  const ctx = api.useContext();
+  const { data: loggedInUser, isLoading: loadingLoggedInUser } =
+    api.profile.getLoggedInUser.useQuery();
   const { data: user } = api.profile.getUserByUsername.useQuery({
     username,
   });
-  const { user: clerkUser } = useUser();
+
+  const { mutate: followUser } = api.profile.followUser.useMutation({
+    onSuccess: () => {
+      void ctx.profile.getUserByUsername.invalidate({ username });
+      void ctx.profile.getLoggedInUser.invalidate();
+    },
+  });
+  const { mutate: unfollowUser } = api.profile.unfollowUser.useMutation({
+    onSuccess: () => {
+      void ctx.profile.getUserByUsername.invalidate({ username });
+      void ctx.profile.getLoggedInUser.invalidate();
+    },
+  });
+
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+
+  if (loadingLoggedInUser) {
+    return <LoadingPage />;
+  }
 
   if (!user) {
     return <div>Not found</div>;
   }
+
+  const followingUser = loggedInUser?.following.some((u) => u.id === user.id);
 
   return (
     <>
@@ -66,19 +88,38 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
             height={140}
           />
         </div>
-        {clerkUser && clerkUser.id === user.id ? (
-          <>
-            <div className="relative flex w-full items-center justify-end">
-              <button
-                type="button"
-                className="mr-3 mt-3 rounded-full border border-slate-500 px-3 py-1 font-semibold transition-all hover:bg-slate-300 hover:bg-opacity-20"
-                onClick={() => setIsEditProfileModalOpen(true)}
-              >
-                Edit Profile
-              </button>
-            </div>
-            <div className="m-6" />
-          </>
+        {loggedInUser ? (
+          loggedInUser.id === user.id ? (
+            <>
+              <div className="relative flex w-full items-center justify-end">
+                <button
+                  type="button"
+                  className="mr-3 mt-3 rounded-full border border-slate-500 px-3 py-1 font-semibold transition-all hover:bg-slate-300 hover:bg-opacity-20"
+                  onClick={() => setIsEditProfileModalOpen(true)}
+                >
+                  Edit Profile
+                </button>
+              </div>
+              <div className="m-6" />
+            </>
+          ) : (
+            <>
+              <div className="relative flex w-full items-center justify-end">
+                <button
+                  type="button"
+                  className="mr-3 mt-3 rounded-full  bg-slate-100 px-4 py-1 font-semibold text-black transition-all hover:bg-slate-300"
+                  onClick={() =>
+                    followingUser
+                      ? unfollowUser({ userId: user.id })
+                      : followUser({ userId: user.id })
+                  }
+                >
+                  {followingUser ? "Unfollow" : "Follow"}
+                </button>
+              </div>
+              <div className="m-6" />
+            </>
+          )
         ) : (
           <div className="m-16" />
         )}
@@ -89,6 +130,16 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
             </p>
           )}
           <p className="font-light text-slate-500">{`@${user.username}`}</p>
+          <div className="mt-2 flex gap-4 text-sm">
+            <div className="flex items-center gap-1">
+              <span>{user._count.following}</span>
+              <span className="text-slate-500">Following</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span>{user._count.followedBy}</span>
+              <span className="text-slate-500">Followers</span>
+            </div>
+          </div>
         </div>
         <Feed userID={user.id} />
       </Layout>

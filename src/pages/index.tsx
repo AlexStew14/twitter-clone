@@ -1,4 +1,3 @@
-import { useUser } from "@clerk/nextjs";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { type NextPage } from "next";
@@ -8,14 +7,14 @@ import toast from "react-hot-toast";
 
 import Feed from "~/components/Feed";
 import Layout from "~/components/Layout";
-import { LoadingSpinner } from "~/components/Loading";
+import { LoadingPage, LoadingSpinner } from "~/components/Loading";
 import useAutosizeTextArea from "~/server/helpers/useAutosizeTextArea";
 import { api } from "~/utils/api";
 
 dayjs.extend(relativeTime);
 
 const CreatePostWizard = () => {
-  const { isSignedIn, user } = useUser();
+  const { data: user, isLoading: userIsLoading } = api.profile.getLoggedInUser.useQuery();
   const [input, setInput] = useState("");
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   useAutosizeTextArea(textAreaRef.current, input);
@@ -38,7 +37,11 @@ const CreatePostWizard = () => {
     },
   });
 
-  if (!isSignedIn) return null;
+  if (userIsLoading) {
+    return <LoadingPage />;
+  }
+
+  if (!user) return null;
 
   return (
     <div className="w-full border-b border-slate-700 px-4 pb-2 pt-8">
@@ -83,11 +86,15 @@ const CreatePostWizard = () => {
 };
 
 const Home: NextPage = () => {
-  const { isSignedIn } = useUser();
+  const { isLoading: userIsLoading, data: user } = api.profile.getLoggedInUser.useQuery();
+
+  if (userIsLoading) {
+    return <div />;
+  }
 
   return (
     <Layout>
-      {isSignedIn && <CreatePostWizard />}
+      {user && <CreatePostWizard />}
       <Feed />
     </Layout>
   );
