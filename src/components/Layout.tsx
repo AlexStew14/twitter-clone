@@ -6,7 +6,7 @@ import { api } from "~/utils/api";
 
 const Layout = (props: PropsWithChildren) => {
   const { children } = props;
-  const { isLoading: userIsLoading, data: user } = api.profile.getLoggedInUser.useQuery();
+  const { isLoading: userIsLoading, data: user } = api.profile.getLoggedIn.useQuery();
   const ctx = api.useContext();
 
   if (userIsLoading) {
@@ -20,7 +20,7 @@ const Layout = (props: PropsWithChildren) => {
           <div className="rounded-full bg-slate-700 p-3">
             {user ? (
               <div>
-                <SignOutButton signOutCallback={() => ctx.profile.getLoggedInUser.invalidate()}>
+                <SignOutButton signOutCallback={() => ctx.profile.getLoggedIn.invalidate()}>
                   Sign Out
                 </SignOutButton>
               </div>

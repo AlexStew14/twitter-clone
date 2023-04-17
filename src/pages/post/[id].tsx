@@ -15,7 +15,7 @@ import { api } from "~/utils/api";
 dayjs.extend(relativeTime);
 
 const SinglePostPage: NextPage<{ id: string }> = ({ id }) => {
-  const { data: post } = api.posts.getByID.useQuery({ id });
+  const { data: post } = api.posts.getById.useQuery({ id });
 
   if (!post) {
     return <div>Post not found</div>;
@@ -52,7 +52,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
     throw new Error("No id");
   }
 
-  await ssg.posts.getByID.prefetch({
+  await ssg.posts.getById.prefetch({
     id,
   });
 

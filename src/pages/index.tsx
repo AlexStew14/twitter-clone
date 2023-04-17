@@ -14,7 +14,7 @@ import { api } from "~/utils/api";
 dayjs.extend(relativeTime);
 
 const CreatePostWizard = () => {
-  const { data: user, isLoading: userIsLoading } = api.profile.getLoggedInUser.useQuery();
+  const { data: user, isLoading: userIsLoading } = api.profile.getLoggedIn.useQuery();
   const [input, setInput] = useState("");
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   useAutosizeTextArea(textAreaRef.current, input);
@@ -86,7 +86,7 @@ const CreatePostWizard = () => {
 };
 
 const Home: NextPage = () => {
-  const { isLoading: userIsLoading, data: user } = api.profile.getLoggedInUser.useQuery();
+  const { isLoading: userIsLoading, data: user } = api.profile.getLoggedIn.useQuery();
 
   if (userIsLoading) {
     return <div />;

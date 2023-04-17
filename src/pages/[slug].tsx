@@ -22,22 +22,21 @@ import { api } from "~/utils/api";
 
 const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
   const ctx = api.useContext();
-  const { data: loggedInUser, isLoading: loadingLoggedInUser } =
-    api.profile.getLoggedInUser.useQuery();
-  const { data: user } = api.profile.getUserByUsername.useQuery({
+  const { data: loggedInUser, isLoading: loadingLoggedInUser } = api.profile.getLoggedIn.useQuery();
+  const { data: user } = api.profile.getByUsername.useQuery({
     username,
   });
 
-  const { mutate: followUser } = api.profile.followUser.useMutation({
+  const { mutate: followUser } = api.profile.follow.useMutation({
     onSuccess: () => {
-      void ctx.profile.getUserByUsername.invalidate({ username });
-      void ctx.profile.getLoggedInUser.invalidate();
+      void ctx.profile.getByUsername.invalidate({ username });
+      void ctx.profile.getLoggedIn.invalidate();
     },
   });
-  const { mutate: unfollowUser } = api.profile.unfollowUser.useMutation({
+  const { mutate: unfollowUser } = api.profile.unfollow.useMutation({
     onSuccess: () => {
-      void ctx.profile.getUserByUsername.invalidate({ username });
-      void ctx.profile.getLoggedInUser.invalidate();
+      void ctx.profile.getByUsername.invalidate({ username });
+      void ctx.profile.getLoggedIn.invalidate();
     },
   });
 
@@ -147,7 +146,7 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
             </Link>
           </div>
         </div>
-        <Feed userID={user.id} />
+        <Feed userId={user.id} />
       </Layout>
     </>
   );
@@ -167,7 +166,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
   }
 
   const username = slug.replace("@", "");
-  await ssg.profile.getUserByUsername.prefetch({
+  await ssg.profile.getByUsername.prefetch({
     username,
   });
 

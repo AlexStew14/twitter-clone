@@ -5,8 +5,8 @@ import { api } from "~/utils/api";
 import { LoadingPage, LoadingSpinner } from "./Loading";
 import PostListView from "./posts/PostListView";
 
-const Feed = (props: { userID?: string }) => {
-  const { userID } = props;
+const Feed = (props: { userId?: string }) => {
+  const { userId } = props;
   const {
     data,
     isLoading: postsIsLoading,
@@ -14,7 +14,7 @@ const Feed = (props: { userID?: string }) => {
     hasNextPage: hasNextPosts,
     isFetchingNextPage: fetchingNextPosts,
   } = api.posts.list.useInfiniteQuery(
-    { limit: 20, userID },
+    { limit: 20, userId },
     { getNextPageParam: (lastPage) => lastPage.nextCursor }
   );
 
@@ -23,8 +23,7 @@ const Feed = (props: { userID?: string }) => {
       if (postsIsLoading || fetchingNextPosts) return;
 
       if (
-        window.innerHeight + window.scrollY >=
-          document.documentElement.scrollHeight &&
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight &&
         hasNextPosts
       ) {
         void fetchNextPosts();
@@ -52,17 +51,12 @@ const Feed = (props: { userID?: string }) => {
         if (postsIsLoading) return;
 
         const target = e.currentTarget;
-        if (
-          target.scrollHeight - target.scrollTop === target.clientHeight &&
-          hasNextPosts
-        ) {
+        if (target.scrollHeight - target.scrollTop === target.clientHeight && hasNextPosts) {
           void fetchNextPosts();
         }
       }}
     >
-      {data.pages.map((page) =>
-        page.posts.map((post) => <PostListView {...post} key={post.id} />)
-      )}
+      {data.pages.map((page) => page.posts.map((post) => <PostListView {...post} key={post.id} />))}
       {fetchingNextPosts && <LoadingSpinner />}
     </div>
   );

@@ -18,7 +18,7 @@ export const profileEditSchema = z.object({
 
 type ProfileEditSchema = z.infer<typeof profileEditSchema>;
 
-type User = RouterOutputs["profile"]["getUserByUsername"];
+type User = RouterOutputs["profile"]["getByUsername"];
 const EditProfileModal: React.FC<{
   user: User;
   isOpen: boolean;
@@ -51,10 +51,10 @@ const EditProfileModal: React.FC<{
   }, [isOpen, reset, user]);
 
   const ctx = api.useContext();
-  const { mutate } = api.profile.editUser.useMutation({
+  const { mutate } = api.profile.edit.useMutation({
     onSuccess: async () => {
       await Promise.all([
-        ctx.profile.getUserByUsername.invalidate({
+        ctx.profile.getByUsername.invalidate({
           username: user.username,
         }),
         ,

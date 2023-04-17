@@ -5,8 +5,8 @@ import { z } from "zod";
 import { profileEditSchema } from "~/components/profiles/EditProfileModal";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
 
-export const profileRouter = createTRPCRouter({
-  getUserByUsername: publicProcedure
+export const usersRouter = createTRPCRouter({
+  getByUsername: publicProcedure
     .input(z.object({ username: z.string() }))
     .query(async ({ ctx, input }) => {
       const dbUser = await ctx.prisma.user.findUnique({
@@ -32,7 +32,7 @@ export const profileRouter = createTRPCRouter({
 
       return dbUser;
     }),
-  getUserByUsernameWithFollowers: publicProcedure
+  getByUsernameWithFollowers: publicProcedure
     .input(z.object({ username: z.string() }))
     .query(async ({ ctx, input }) => {
       const dbUser = await ctx.prisma.user.findUnique({
@@ -53,7 +53,7 @@ export const profileRouter = createTRPCRouter({
 
       return dbUser;
     }),
-  getUserByUsernameWithFollowing: publicProcedure
+  getByUsernameWithFollowing: publicProcedure
     .input(z.object({ username: z.string() }))
     .query(async ({ ctx, input }) => {
       const dbUser = await ctx.prisma.user.findUnique({
@@ -74,7 +74,7 @@ export const profileRouter = createTRPCRouter({
 
       return dbUser;
     }),
-  getLoggedInUser: publicProcedure.query(async ({ ctx }) => {
+  getLoggedIn: publicProcedure.query(async ({ ctx }) => {
     if (!ctx.userId) {
       return null;
     }
@@ -123,7 +123,7 @@ export const profileRouter = createTRPCRouter({
       },
     });
   }),
-  editUser: privateProcedure.input(profileEditSchema).mutation(async ({ ctx, input }) => {
+  edit: privateProcedure.input(profileEditSchema).mutation(async ({ ctx, input }) => {
     if (ctx.userId !== input.userId) {
       throw new TRPCError({
         code: "UNAUTHORIZED",
@@ -142,7 +142,7 @@ export const profileRouter = createTRPCRouter({
       },
     });
   }),
-  followUser: privateProcedure
+  follow: privateProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       if (ctx.userId === input.userId) {
@@ -180,7 +180,7 @@ export const profileRouter = createTRPCRouter({
       ]);
       return {};
     }),
-  unfollowUser: privateProcedure
+  unfollow: privateProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       if (ctx.userId === input.userId) {

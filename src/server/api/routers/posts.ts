@@ -17,11 +17,11 @@ export const postsRouter = createTRPCRouter({
       z.object({
         limit: z.number().min(1).nullish(),
         cursor: z.string().nullish(),
-        userID: z.string().nullish(),
+        userId: z.string().nullish(),
       })
     )
     .query(async ({ ctx, input }) => {
-      const { cursor, userID } = input;
+      const { cursor, userId } = input;
       const limit = input.limit || 5;
 
       const postsWithUsers = await ctx.prisma.post.findMany({
@@ -36,12 +36,12 @@ export const postsRouter = createTRPCRouter({
               firstName: true,
               lastName: true,
               profileImageUrl: true,
-            }
-          }
+            },
+          },
         },
-        where: userID
+        where: userId
           ? {
-              authorId: userID,
+              authorId: userId,
             }
           : undefined,
       });
@@ -55,35 +55,33 @@ export const postsRouter = createTRPCRouter({
 
       return { posts: postsWithUsers, nextCursor };
     }),
-  getByID: publicProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const post = await ctx.prisma.post.findUnique({
-        where: {
-          id: input.id,
+  getById: publicProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    const post = await ctx.prisma.post.findUnique({
+      where: {
+        id: input.id,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            profileImageUrl: true,
+          },
         },
-        include: {
-          author: {
-            select: {
-              id: true,
-              username: true,
-              firstName: true,
-              lastName: true,
-              profileImageUrl: true,
-            }
-          }
-        }
+      },
+    });
+
+    if (!post) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Post not found",
       });
+    }
 
-      if (!post) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Post not found",
-        });
-      }
-
-      return post;
-    }),
+    return post;
+  }),
   create: privateProcedure
     .input(
       z.object({
