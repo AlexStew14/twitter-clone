@@ -2,7 +2,7 @@
 import { Dialog } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
-import { type SetStateAction, useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { AiOutlineClose } from "react-icons/ai";
 import { z } from "zod";
@@ -17,13 +17,15 @@ export const profileEditSchema = z.object({
 });
 
 type ProfileEditSchema = z.infer<typeof profileEditSchema>;
-
-type User = RouterOutputs["profile"]["getByUsername"];
-const EditProfileModal: React.FC<{
+type User = RouterOutputs["users"]["getByUsername"];
+type EditProfileModalProps = {
   user: User;
   isOpen: boolean;
-  setIsOpen: React.Dispatch<SetStateAction<boolean>>;
-}> = ({ user, isOpen, setIsOpen }) => {
+  setIsOpen: (isOpen: boolean) => void;
+};
+const EditProfileModal = (props: EditProfileModalProps) => {
+  const { user, isOpen, setIsOpen } = props;
+
   const {
     register,
     handleSubmit,
@@ -51,10 +53,10 @@ const EditProfileModal: React.FC<{
   }, [isOpen, reset, user]);
 
   const ctx = api.useContext();
-  const { mutate } = api.profile.edit.useMutation({
+  const { mutate } = api.users.edit.useMutation({
     onSuccess: async () => {
       await Promise.all([
-        ctx.profile.getByUsername.invalidate({
+        ctx.users.getByUsername.invalidate({
           username: user.username,
         }),
         ,
@@ -69,7 +71,7 @@ const EditProfileModal: React.FC<{
     <Dialog as="div" className="relative z-10" onClose={() => setIsOpen(false)} open={isOpen}>
       <div className="fixed inset-0 overflow-y-auto bg-slate-300 bg-opacity-20">
         <div className="flex min-h-full items-center justify-center text-center">
-          <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded-2xl bg-black text-left align-middle transition-all">
+          <Dialog.Panel className="w-full max-w-[600px] transform overflow-hidden rounded-2xl bg-black text-left align-middle transition-all">
             <form onSubmit={handleSubmit((values) => mutate(values))}>
               <Dialog.Title as="div" className="m-3 flex items-center gap-7 text-xl font-bold">
                 <button onClick={() => setIsOpen(false)}>

@@ -19,8 +19,8 @@ import { api } from "~/utils/api";
 
 const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
   const ctx = api.useContext();
-  const { data: loggedInUser, isLoading: loadingLoggedInUser } = api.profile.getLoggedIn.useQuery();
-  const { data: user } = api.profile.getByUsernameWithFollowing.useQuery({
+  const { data: loggedInUser, isLoading: loadingLoggedInUser } = api.users.getLoggedIn.useQuery();
+  const { data: user } = api.users.getByUsernameWithFollowing.useQuery({
     username,
   });
 
@@ -108,10 +108,10 @@ export const getStaticProps: GetStaticProps = async (context) => {
 
   const username = slug.replace("@", "");
   await Promise.all([
-    ssg.profile.getByUsernameWithFollowing.prefetch({
+    ssg.users.getByUsernameWithFollowing.prefetch({
       username,
     }),
-    ssg.profile.getLoggedIn.prefetch(),
+    ssg.users.getLoggedIn.prefetch(),
   ]);
 
   return {

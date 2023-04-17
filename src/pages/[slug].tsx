@@ -22,21 +22,21 @@ import { api } from "~/utils/api";
 
 const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
   const ctx = api.useContext();
-  const { data: loggedInUser, isLoading: loadingLoggedInUser } = api.profile.getLoggedIn.useQuery();
-  const { data: user } = api.profile.getByUsername.useQuery({
+  const { data: loggedInUser, isLoading: loadingLoggedInUser } = api.users.getLoggedIn.useQuery();
+  const { data: user } = api.users.getByUsername.useQuery({
     username,
   });
 
-  const { mutate: followUser } = api.profile.follow.useMutation({
+  const { mutate: followUser } = api.users.follow.useMutation({
     onSuccess: () => {
-      void ctx.profile.getByUsername.invalidate({ username });
-      void ctx.profile.getLoggedIn.invalidate();
+      void ctx.users.getByUsername.invalidate({ username });
+      void ctx.users.getLoggedIn.invalidate();
     },
   });
-  const { mutate: unfollowUser } = api.profile.unfollow.useMutation({
+  const { mutate: unfollowUser } = api.users.unfollow.useMutation({
     onSuccess: () => {
-      void ctx.profile.getByUsername.invalidate({ username });
-      void ctx.profile.getLoggedIn.invalidate();
+      void ctx.users.getByUsername.invalidate({ username });
+      void ctx.users.getLoggedIn.invalidate();
     },
   });
 
@@ -146,7 +146,7 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
             </Link>
           </div>
         </div>
-        <Feed userId={user.id} />
+        <Feed loggedInUser={loggedInUser} authorId={user.id} />
       </Layout>
     </>
   );
@@ -166,7 +166,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
   }
 
   const username = slug.replace("@", "");
-  await ssg.profile.getByUsername.prefetch({
+  await ssg.users.getByUsername.prefetch({
     username,
   });
 

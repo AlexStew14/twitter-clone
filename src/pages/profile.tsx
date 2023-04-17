@@ -2,7 +2,7 @@ import { LoadingPage } from "~/components/Loading";
 import { api } from "~/utils/api";
 
 const Profile = () => {
-  const { data: user, isLoading: userIsLoading } = api.profile.getLoggedIn.useQuery();
+  const { data: user, isLoading: userIsLoading } = api.users.getLoggedIn.useQuery();
 
   if (userIsLoading) {
     return <LoadingPage />;

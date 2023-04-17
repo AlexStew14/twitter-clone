@@ -21,9 +21,9 @@ model Post {
   author   User   @relation(fields: [authorId], references: [id])
   @@index([authorId])
 
-  replyToId String? @unique
+  replyToId String? 
   replyTo  Post?  @relation("PostReplies", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  reply Post? @relation("PostReplies")
+  replies Post[] @relation("PostReplies")
   @@index([replyToId])
 }
 
@@ -32,6 +32,8 @@ model User {
   createdAt DateTime @default(now())
 
   username    String @unique @db.VarChar(255)
+  @@index([username])
+
   firstName   String @db.VarChar(63)
   lastName    String @db.VarChar(63)
   description String @db.VarChar(511)

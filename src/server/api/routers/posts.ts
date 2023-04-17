@@ -3,6 +3,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { z } from "zod";
 
+import { postReplySchema } from "~/components/posts/PostReplyModal";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
 
 const ratelimit = new Ratelimit({
@@ -17,11 +18,11 @@ export const postsRouter = createTRPCRouter({
       z.object({
         limit: z.number().min(1).nullish(),
         cursor: z.string().nullish(),
-        userId: z.string().nullish(),
+        authorId: z.string().nullish(),
       })
     )
     .query(async ({ ctx, input }) => {
-      const { cursor, userId } = input;
+      const { cursor, authorId } = input;
       const limit = input.limit || 5;
 
       const postsWithUsers = await ctx.prisma.post.findMany({
@@ -39,11 +40,10 @@ export const postsRouter = createTRPCRouter({
             },
           },
         },
-        where: userId
-          ? {
-              authorId: userId,
-            }
-          : undefined,
+        where: {
+          authorId: authorId ? authorId : undefined,
+          replyToId: null,
+        },
       });
 
       let nextCursor: typeof cursor | undefined = undefined;
@@ -106,4 +106,23 @@ export const postsRouter = createTRPCRouter({
         },
       });
     }),
+  reply: privateProcedure.input(postReplySchema).mutation(async ({ ctx, input }) => {
+    const authorId = ctx.userId;
+    const { success } = await ratelimit.limit(authorId);
+
+    if (!success) {
+      throw new TRPCError({
+        code: "TOO_MANY_REQUESTS",
+        message: "You are posting too fast",
+      });
+    }
+
+    return await ctx.prisma.post.create({
+      data: {
+        authorId,
+        content: input.content,
+        replyToId: input.replyToId,
+      },
+    });
+  }),
 });

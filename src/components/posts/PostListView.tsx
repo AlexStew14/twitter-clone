@@ -11,8 +11,13 @@ dayjs.extend(relativeTime);
 import { type RouterOutputs } from "~/utils/api";
 
 type PostWithAuthor = RouterOutputs["posts"]["list"]["posts"][0];
-const PostListView = (post: PostWithAuthor) => {
+type PostListViewProps = {
+  post: PostWithAuthor;
+  onReply: (postId: string) => void;
+};
 
+const PostListView = (props: PostListViewProps) => {
+  const { post, onReply } = props;
   return (
     <Link
       href={`/post/${post.id}`}
@@ -41,37 +46,35 @@ const PostListView = (post: PostWithAuthor) => {
               <span>{dayjs(post.createdAt).fromNow()}</span>
             </div>
           </Link>
-          <p className="w-full break-all">{post.content}</p>
+          <p className="w-full whitespace-pre-line">{post.content}</p>
         </div>
       </div>
       <div className="ml-5 mt-2 flex max-w-xl items-center justify-around">
-        <div className="group relative flex gap-2 rounded-full align-middle text-slate-500">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            onReply(post.id);
+          }}
+          className="group relative flex gap-2 rounded-full align-middle text-slate-500"
+        >
           <div className="absolute left-[-6px] top-[-4px] h-7 w-7 rounded-full transition-all group-hover:bg-blue-600 group-hover:bg-opacity-30" />
           <FaRegComment className="relative top-[2px] rounded-full transition-all group-hover:text-blue-400" />
-          <span className="text-sm transition-all group-hover:text-blue-600">
-            3726
-          </span>
-        </div>
+          <span className="text-sm transition-all group-hover:text-blue-600">3726</span>
+        </button>
         <div className="group relative flex gap-2 rounded-full align-middle text-slate-500">
           <div className="absolute left-[-6px] top-[-4px] h-7 w-7 rounded-full transition-all group-hover:bg-green-600 group-hover:bg-opacity-30" />
           <AiOutlineRetweet className="relative top-[2px] rounded-full transition-all group-hover:text-green-400" />
-          <span className="text-sm transition-all group-hover:text-green-600">
-            3726
-          </span>
+          <span className="text-sm transition-all group-hover:text-green-600">3726</span>
         </div>
         <div className="group relative flex gap-2 rounded-full align-middle text-slate-500">
           <div className="absolute left-[-6px] top-[-4px] h-7 w-7 rounded-full transition-all group-hover:bg-red-600 group-hover:bg-opacity-30" />
           <AiOutlineHeart className="relative top-[2px] rounded-full transition-all group-hover:text-red-400" />
-          <span className="text-sm transition-all group-hover:text-red-600">
-            3726
-          </span>
+          <span className="text-sm transition-all group-hover:text-red-600">3726</span>
         </div>
         <div className="group relative flex gap-2 rounded-full align-middle text-slate-500">
           <div className="absolute left-[-6px] top-[-4px] h-7 w-7 rounded-full transition-all group-hover:bg-blue-600 group-hover:bg-opacity-30" />
           <BiBarChart className="relative top-[2px] rounded-full transition-all group-hover:text-blue-400" />
-          <span className="text-sm transition-all group-hover:text-blue-600">
-            3726
-          </span>
+          <span className="text-sm transition-all group-hover:text-blue-600">3726</span>
         </div>
       </div>
     </Link>
