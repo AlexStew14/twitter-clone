@@ -19,8 +19,12 @@ model Post {
 
   authorId String
   author   User   @relation(fields: [authorId], references: [id])
-
   @@index([authorId])
+
+  replyToId String? @unique
+  replyTo  Post?  @relation("PostReplies", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  reply Post? @relation("PostReplies")
+  @@index([replyToId])
 }
 
 model User {

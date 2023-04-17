@@ -23,39 +23,14 @@ export const profileRouter = createTRPCRouter({
         },
       });
 
-      if (dbUser) {
-        return dbUser;
-      }
-
-      const [clerkUser] = await clerkClient.users.getUserList({
-        username: [input.username],
-      });
-
-      if (!clerkUser || !clerkUser.username) {
+      if (!dbUser) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Could not find user with that username",
         });
       }
 
-      return await ctx.prisma.user.create({
-        data: {
-          id: clerkUser.id,
-          username: clerkUser.username,
-          firstName: clerkUser.firstName || "",
-          lastName: clerkUser.lastName || "",
-          profileImageUrl: clerkUser.profileImageUrl || "",
-          description: "",
-        },
-        include: {
-          _count: {
-            select: {
-              following: true,
-              followedBy: true,
-            },
-          },
-        },
-      });
+      return dbUser;
     }),
   getUserByUsernameWithFollowers: publicProcedure
     .input(z.object({ username: z.string() }))
@@ -117,14 +92,36 @@ export const profileRouter = createTRPCRouter({
       },
     });
 
-    if (!dbUser) {
+    if (dbUser) {
+      return dbUser;
+    }
+
+    const clerkUser = await clerkClient.users.getUser(ctx.userId);
+
+    if (!clerkUser || !clerkUser.username) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "Could not find logged in user",
+        message: "Could not find user with that username",
       });
     }
 
-    return dbUser;
+    return await ctx.prisma.user.create({
+      data: {
+        id: clerkUser.id,
+        username: clerkUser.username,
+        firstName: clerkUser.firstName || "",
+        lastName: clerkUser.lastName || "",
+        profileImageUrl: clerkUser.profileImageUrl || "",
+        description: "",
+      },
+      include: {
+        following: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
   }),
   editUser: privateProcedure.input(profileEditSchema).mutation(async ({ ctx, input }) => {
     if (ctx.userId !== input.userId) {
