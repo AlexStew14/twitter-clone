@@ -131,14 +131,20 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
           )}
           <p className="font-light text-slate-500">{`@${user.username}`}</p>
           <div className="mt-2 flex gap-4 text-sm">
-            <div className="flex items-center gap-1">
+            <Link
+              href={`/@${user.username}/following`}
+              className="flex items-center gap-1 hover:underline"
+            >
               <span>{user._count.following}</span>
               <span className="text-slate-500">Following</span>
-            </div>
-            <div className="flex items-center gap-1">
+            </Link>
+            <Link
+              href={`/@${user.username}/followers`}
+              className="flex items-center gap-1 hover:underline"
+            >
               <span>{user._count.followedBy}</span>
               <span className="text-slate-500">Followers</span>
-            </div>
+            </Link>
           </div>
         </div>
         <Feed userID={user.id} />

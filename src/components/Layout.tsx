@@ -25,9 +25,7 @@ const Layout = (props: PropsWithChildren) => {
                 </SignOutButton>
               </div>
             ) : (
-              <SignInButton redirectUrl={window.location.href} mode="modal">
-                Sign In
-              </SignInButton>
+              <SignInButton mode="modal">Sign In</SignInButton>
             )}
           </div>
         </div>

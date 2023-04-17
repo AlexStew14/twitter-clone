@@ -57,6 +57,48 @@ export const profileRouter = createTRPCRouter({
         },
       });
     }),
+  getUserByUsernameWithFollowers: publicProcedure
+    .input(z.object({ username: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const dbUser = await ctx.prisma.user.findUnique({
+        where: {
+          username: input.username,
+        },
+        include: {
+          followedBy: true,
+        },
+      });
+
+      if (!dbUser) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Could not find user with that username",
+        });
+      }
+
+      return dbUser;
+    }),
+  getUserByUsernameWithFollowing: publicProcedure
+    .input(z.object({ username: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const dbUser = await ctx.prisma.user.findUnique({
+        where: {
+          username: input.username,
+        },
+        include: {
+          following: true,
+        },
+      });
+
+      if (!dbUser) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Could not find user with that username",
+        });
+      }
+
+      return dbUser;
+    }),
   getLoggedInUser: publicProcedure.query(async ({ ctx }) => {
     if (!ctx.userId) {
       return null;
