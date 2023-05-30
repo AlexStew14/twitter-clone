@@ -1,7 +1,5 @@
 # Twitter Clone
 
-https://t3-stack-tutorial-alexstew14.vercel.app/
-
 Video followed: https://www.youtube.com/watch?v=YkOSUVzOAA4
 
 ## Features
